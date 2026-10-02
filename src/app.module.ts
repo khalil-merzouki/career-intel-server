@@ -1,22 +1,27 @@
 import { Module } from '@nestjs/common';
-import { createObserveModule } from '@nestjs/observe';
-import { AppController } from './app.controller.js';
-import { AppService } from './app.service.js';
-
-export const { ObserveModule, ObserveInstrument } = createObserveModule();
+import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule } from '@nestjs/config';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { DatabaseService } from './database/database.service.js';
+import { ProfileController } from './profile/profile.controller.js';
+import { ProfileService } from './profile/profile.service.js';
+import { JobsController } from './jobs/jobs.controller.js';
+import { JobsService } from './jobs/jobs.service.js';
+import { ApplicationsController } from './applications/applications.controller.js';
+import { ApplicationsService } from './applications/applications.service.js';
 
 @Module({
   imports: [
-    // Distributed tracing, auto-correlated logs, request/job metrics, error
-    // telemetry, alarms, and more — out of the box. Sign up at https://observe.nestjs.com
-    ObserveModule.forRoot({
-      appKey: process.env.OBSERVE_APP_KEY ?? '',
-      appSecret: process.env.OBSERVE_APP_SECRET ?? '',
-      runtimeMetrics: !Boolean(process.versions?.['webcontainer']),
-      serviceId: 'nest-typescript-starter',
-    }),
+    ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [ProfileController, JobsController, ApplicationsController],
+  providers: [
+    DatabaseService,
+    ProfileService,
+    JobsService,
+    ApplicationsService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

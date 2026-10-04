@@ -1,13 +1,15 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { desc, eq } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
 import { DatabaseService } from '../database/database.service.js';
 import { jobs } from '../database/schema.js';
 import { ProfileService } from '../profile/profile.service.js';
-import { analyze } from './analyzer.js';
+import { JobExtractorClient } from './job-extractor.client.js';
 import { compareOpportunity } from './match-analysis.js';
 import {
   validateCapture,
   validateConfirmation,
+  validateExtraction,
   validateJobUpdate,
 } from './validation.js';
 import type { JobOpportunity } from './types.js';
@@ -17,6 +19,7 @@ export class JobsService {
   constructor(
     private readonly database: DatabaseService,
     private readonly profile: ProfileService,
+    private readonly extractor: JobExtractorClient,
   ) {}
   async list(): Promise<JobOpportunity[]> {
     return (
@@ -32,7 +35,18 @@ export class JobsService {
     return row.data;
   }
   async analyze(value: unknown): Promise<JobOpportunity> {
-    const job = analyze(validateCapture(value));
+    const input = validateCapture(value);
+    const extracted = await this.extractor.extract(input);
+    const details = validateExtraction(extracted);
+    const job: JobOpportunity = {
+      id: randomUUID(),
+      ...input,
+      ...details,
+      status: 'draft',
+      trackingStatus: 'saved',
+      notes: '',
+      createdAt: new Date().toISOString(),
+    };
     await this.database.db.insert(jobs).values({ id: job.id, data: job });
     return job;
   }

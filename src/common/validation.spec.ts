@@ -3,10 +3,11 @@ import { emptyProfile } from '../profile/profile.service.js';
 import {
   validateCapture,
   validateConfirmation,
+  validateExtraction,
   validateJobUpdate,
 } from '../jobs/validation.js';
 import { validateCreate, validateUpdate } from '../applications/validation.js';
-import { analyze } from '../jobs/analyzer.js';
+import type { JobOpportunity } from '../jobs/types.js';
 import { compareOpportunity } from '../jobs/match-analysis.js';
 import { choice, date, id, list, object, string } from './validation.js';
 
@@ -39,15 +40,38 @@ describe('request and domain validation', () => {
       url: 'https://example.com',
       description: 'x'.repeat(100),
     });
-    expect(analyze(captured).status).toBe('draft');
     expect(() =>
       validateCapture({
         url: 'javascript:alert(1)',
         description: 'x'.repeat(100),
       }),
     ).toThrow();
-    const job = analyze(captured);
+    const job: JobOpportunity = {
+      id: '47b6e9b2-36bd-469c-aa50-222222222222',
+      ...captured,
+      role: 'Engineer',
+      company: 'Acme',
+      location: 'Unknown',
+      workType: 'unknown',
+      salary: '',
+      salarySource: 'estimated',
+      seniority: '',
+      experience: '',
+      requirements: [],
+      status: 'draft',
+      trackingStatus: 'saved',
+      notes: '',
+      createdAt: new Date().toISOString(),
+    };
     expect(validateConfirmation(job).role).toBe(job.role);
+    expect(
+      validateExtraction({
+        ...job,
+        requirements: [
+          { category: 'skill', text: 'React', priority: 'required' },
+        ],
+      }).requirements[0].id,
+    ).toMatch(/^[0-9a-f-]{36}$/);
     expect(
       validateJobUpdate({ notes: '', trackingStatus: 'archived' })
         .trackingStatus,

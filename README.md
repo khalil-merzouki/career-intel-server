@@ -1,6 +1,6 @@
 # Career Intel API
 
-NestJS API for the Career Intel web app. It stores profiles, job opportunities, and applications in PostgreSQL using Drizzle.
+NestJS API for the Career Intel web app. It stores profiles, job opportunities, and applications in PostgreSQL using Drizzle. Job extraction is delegated to the private Hono service in `../career-intel-ai`.
 
 ## Local setup
 
@@ -8,7 +8,7 @@ NestJS API for the Career Intel web app. It stores profiles, job opportunities, 
 2. Run `npm install`.
 3. Copy `.env.example` to `.env` if you need to change defaults. NestJS loads `.env` on startup.
 4. Run `npm run db:migrate`.
-5. Run `npm run start:dev`.
+5. Configure `EXTRACTOR_TOKEN` and start `../career-intel-ai` before running `npm run start:dev`. `JOB_EXTRACTOR_URL` defaults to `http://127.0.0.1:3001`.
 6. In `../career-intel`, run `npm run dev`. Vite proxies `/api` to port 3000. Set `VITE_USE_MOCKS=true` only to use the browser mocks.
 
 The API binds to loopback by default and has no user authentication. Keep it local; add account authentication and record ownership before exposing it to a network. NestJS rate limiting, Helmet headers, restricted CORS, request validation, UUID checks, and 5 MB CV upload limits are enabled.
@@ -26,4 +26,5 @@ CV import extracts text from PDF or DOCX and fills only a role explicitly labele
 
 - `GET/PUT /api/profile`, `POST /api/profile/reset`, `POST /api/profile/import`
 - `GET /api/jobs`, `GET/PUT /api/jobs/:jobId`, `POST /api/jobs/analyze`, `POST /api/jobs/:jobId/confirm`, `GET /api/jobs/:jobId/match`
+- `GET /api/dashboard` — profile readiness, application and interview counts, aligned opportunities, recurring gaps, and next focus.
 - `GET/POST /api/applications`, `GET/PUT /api/applications/:applicationId`, `GET /api/applications/by-job/:jobId`, `GET /api/applications/source/:jobId`

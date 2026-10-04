@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { BadRequestException } from '@nestjs/common';
 import { choice, list, object, string } from '../common/validation.js';
 import type {
@@ -92,4 +93,12 @@ export function validateJobUpdate(
       'archived',
     ]),
   };
+}
+
+export function validateExtraction(value: unknown) {
+  const extracted = object(value);
+  const requirements = list(extracted.requirements, 'requirements', 100).map(
+    (entry) => ({ ...object(entry), id: randomUUID() }),
+  );
+  return validateConfirmation({ ...extracted, requirements });
 }

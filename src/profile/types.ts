@@ -1,4 +1,5 @@
-export type Proficiency = 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
+export type Proficiency =
+  'Unspecified' | 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
 
 export interface Experience {
   id: string;

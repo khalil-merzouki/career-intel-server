@@ -13,7 +13,7 @@ NestJS API for the Career Intel web app. It stores profiles, job opportunities, 
 
 The API binds to loopback by default and has no user authentication. Keep it local; add account authentication and record ownership before exposing it to a network. NestJS rate limiting, Helmet headers, restricted CORS, request validation, UUID checks, and 5 MB CV upload limits are enabled.
 
-CV import extracts text from PDF or DOCX and fills only a role explicitly labeled in the document. The user must review and finish the profile. The server does not retain the uploaded document.
+CV import extracts text from PDF or DOCX, sends it to the private `career-intel-ai` service for OpenAI extraction, and saves the structured result as an incomplete profile for review. The server does not retain the uploaded document. Configure `PROFILE_EXTRACTOR_URL` and the same `EXTRACTOR_TOKEN` in both services; keep the AI service on a private interface. CV text is sent to OpenAI for processing. Skills without an explicit level are marked `Unspecified`.
 
 ## Commands
 
@@ -24,6 +24,7 @@ CV import extracts text from PDF or DOCX and fills only a role explicitly labele
 
 ## API
 
+- `GET /api/dashboard`
 - `GET/PUT /api/profile`, `POST /api/profile/reset`, `POST /api/profile/import`
 - `GET /api/jobs`, `GET/PUT /api/jobs/:jobId`, `POST /api/jobs/analyze`, `POST /api/jobs/:jobId/confirm`, `GET /api/jobs/:jobId/match`
 - `GET/POST /api/applications`, `GET/PUT /api/applications/:applicationId`, `GET /api/applications/by-job/:jobId`, `GET /api/applications/source/:jobId`

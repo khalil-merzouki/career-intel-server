@@ -22,6 +22,7 @@ export function validateProfile(value: unknown): Profile {
   const skills = records(p.skills, 'skills', ['id', 'name', 'proficiency']);
   skills.forEach((s) =>
     choice(s.proficiency, 'proficiency', [
+      'Unspecified',
       'Beginner',
       'Intermediate',
       'Advanced',

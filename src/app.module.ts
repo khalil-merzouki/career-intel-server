@@ -5,22 +5,32 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { DatabaseService } from './database/database.service.js';
 import { ProfileController } from './profile/profile.controller.js';
 import { ProfileService } from './profile/profile.service.js';
+import { ProfileExtractorClient } from './profile/profile-extractor.client.js';
 import { JobsController } from './jobs/jobs.controller.js';
 import { JobsService } from './jobs/jobs.service.js';
 import { ApplicationsController } from './applications/applications.controller.js';
 import { ApplicationsService } from './applications/applications.service.js';
+import { DashboardController } from './dashboard/dashboard.controller.js';
+import { DashboardService } from './dashboard/dashboard.service.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),
   ],
-  controllers: [ProfileController, JobsController, ApplicationsController],
+  controllers: [
+    ProfileController,
+    JobsController,
+    ApplicationsController,
+    DashboardController,
+  ],
   providers: [
     DatabaseService,
     ProfileService,
+    ProfileExtractorClient,
     JobsService,
     ApplicationsService,
+    DashboardService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })

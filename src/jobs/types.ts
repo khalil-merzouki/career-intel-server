@@ -54,3 +54,13 @@ export interface MatchAnalysis {
   missingSkills: MatchFinding[];
   eligibilityGaps: MatchFinding[];
 }
+
+export interface RecruiterMatch {
+  stage: 'unscorable' | 'below-threshold' | 'recruiter-reviewed';
+  score: number | null;
+  threshold: 65;
+  matchedSkills: string[];
+  missingSkills: string[];
+  recommendInterview: boolean | null;
+  summary: string;
+}

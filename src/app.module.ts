@@ -9,6 +9,7 @@ import { ProfileExtractorClient } from './profile/profile-extractor.client.js';
 import { JobsController } from './jobs/jobs.controller.js';
 import { JobsService } from './jobs/jobs.service.js';
 import { JobAgentClient } from './jobs/job-agent.client.js';
+import { MatchAgentClient } from './jobs/match-agent.client.js';
 import { ApplicationsController } from './applications/applications.controller.js';
 import { ApplicationsService } from './applications/applications.service.js';
 import { DashboardController } from './dashboard/dashboard.controller.js';
@@ -33,6 +34,7 @@ import { InsightsService } from './insights/insights.service.js';
     ProfileService,
     ProfileExtractorClient,
     JobAgentClient,
+    MatchAgentClient,
     JobsService,
     ApplicationsService,
     DashboardService,

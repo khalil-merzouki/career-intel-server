@@ -10,6 +10,7 @@ import {
 } from '../src/profile/profile.service.js';
 import { JobsService } from '../src/jobs/jobs.service.js';
 import { JobAgentClient } from '../src/jobs/job-agent.client.js';
+import { MatchAgentClient } from '../src/jobs/match-agent.client.js';
 import { ApplicationsService } from '../src/applications/applications.service.js';
 import { ProfileExtractorClient } from '../src/profile/profile-extractor.client.js';
 import { DashboardService } from '../src/dashboard/dashboard.service.js';
@@ -43,6 +44,17 @@ describe('web API routes', () => {
     analyze: vi.fn().mockResolvedValue(job),
     confirm: vi.fn().mockResolvedValue(job),
     update: vi.fn().mockResolvedValue(job),
+    evaluateMatch: vi
+      .fn()
+      .mockResolvedValue({
+        stage: 'below-threshold',
+        score: 50,
+        threshold: 65,
+        matchedSkills: [],
+        missingSkills: ['React'],
+        recommendInterview: null,
+        summary: 'Needs more skills.',
+      }),
     match: vi.fn().mockResolvedValue({
       state: 'ready',
       strongMatches: [],
@@ -117,6 +129,8 @@ describe('web API routes', () => {
       .useValue(extractor)
       .overrideProvider(JobAgentClient)
       .useValue({ analyze: vi.fn() })
+      .overrideProvider(MatchAgentClient)
+      .useValue({ evaluate: vi.fn() })
       .overrideProvider(JobsService)
       .useValue(jobs)
       .overrideProvider(ApplicationsService)
@@ -191,6 +205,10 @@ describe('web API routes', () => {
       .send({ url: '', description: 'x'.repeat(100) })
       .expect(201);
     await request(app.getHttpServer()).get(`/api/jobs/${job.id}`).expect(200);
+    await request(app.getHttpServer())
+      .post(`/api/jobs/${job.id}/evaluate-match`)
+      .expect(201);
+    expect(jobs.evaluateMatch).toHaveBeenCalledWith(job.id);
     await request(app.getHttpServer())
       .get(`/api/jobs/${job.id}/match`)
       .expect(200);

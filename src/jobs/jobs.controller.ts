@@ -11,6 +11,9 @@ export class JobsController {
   @Post('analyze') analyze(@Body() body: unknown) {
     return this.service.analyze(body);
   }
+  @Post(':jobId/evaluate-match') evaluateMatch(@Param('jobId') jobId: string) {
+    return this.service.evaluateMatch(id(jobId));
+  }
   @Get(':jobId/match') match(@Param('jobId') jobId: string) {
     return this.service.match(id(jobId));
   }

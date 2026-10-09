@@ -1,10 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { desc, eq } from 'drizzle-orm';
 import { DatabaseService } from '../database/database.service.js';
 import { jobs } from '../database/schema.js';
 import { ProfileService } from '../profile/profile.service.js';
 import { randomUUID } from 'node:crypto';
 import { JobAgentClient } from './job-agent.client.js';
+import { MatchAgentClient } from './match-agent.client.js';
 import { compareOpportunity } from './match-analysis.js';
 import {
   validateCapture,
@@ -19,6 +24,7 @@ export class JobsService {
     private readonly database: DatabaseService,
     private readonly profile: ProfileService,
     private readonly agent: JobAgentClient,
+    private readonly matchAgent: MatchAgentClient,
   ) {}
   async list(): Promise<JobOpportunity[]> {
     return (
@@ -69,6 +75,19 @@ export class JobsService {
   }
   async match(id: string) {
     return compareOpportunity(await this.get(id), await this.profile.get());
+  }
+  async evaluateMatch(id: string) {
+    const job = await this.get(id);
+    if (job.status !== 'confirmed')
+      throw new ConflictException(
+        'Confirm the job analysis before evaluation.',
+      );
+    const profile = await this.profile.get();
+    if (!profile.complete)
+      throw new ConflictException(
+        'Complete your Career Profile before evaluation.',
+      );
+    return this.matchAgent.evaluate(profile, job);
   }
   async markApplied(id: string) {
     const job = await this.get(id);

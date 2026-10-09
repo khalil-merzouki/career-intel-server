@@ -162,6 +162,36 @@ export function compareOpportunity(
             requirement.priority,
           ),
         );
+    } else if (requirement.category === 'education') {
+      const education = profile.education.find(
+        (item) =>
+          normalize(item.qualification).includes(normalize(title)) ||
+          normalize(title).includes(normalize(item.qualification)),
+      );
+      if (education)
+        result.strongMatches.push(
+          finding(
+            requirement.id,
+            title,
+            'Education',
+            basis,
+            `${education.qualification} · ${education.institution}`,
+            'This education is listed in your profile.',
+            requirement.priority,
+          ),
+        );
+      else
+        result.eligibilityGaps.push(
+          finding(
+            requirement.id,
+            title,
+            'Education',
+            basis,
+            'No matching education is listed.',
+            'The requested education is not documented in your profile.',
+            requirement.priority,
+          ),
+        );
     } else if (requirement.category === 'certification') {
       const certification = profile.certifications.find(
         (item) => normalize(item.name) === normalize(title),

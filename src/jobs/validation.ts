@@ -53,6 +53,7 @@ export function validateConfirmation(
         'skill',
         'language',
         'certification',
+        'education',
         'location',
         'work',
       ]),

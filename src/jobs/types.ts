@@ -1,5 +1,5 @@
 export type RequirementCategory =
-  'skill' | 'language' | 'certification' | 'location' | 'work';
+  'skill' | 'language' | 'certification' | 'education' | 'location' | 'work';
 export type RequirementPriority = 'required' | 'preferred';
 export type OpportunityStatus = 'draft' | 'confirmed';
 export type WorkType = 'remote' | 'hybrid' | 'on-site' | 'unknown';

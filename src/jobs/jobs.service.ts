@@ -3,7 +3,8 @@ import { desc, eq } from 'drizzle-orm';
 import { DatabaseService } from '../database/database.service.js';
 import { jobs } from '../database/schema.js';
 import { ProfileService } from '../profile/profile.service.js';
-import { analyze } from './analyzer.js';
+import { randomUUID } from 'node:crypto';
+import { JobAgentClient } from './job-agent.client.js';
 import { compareOpportunity } from './match-analysis.js';
 import {
   validateCapture,
@@ -17,6 +18,7 @@ export class JobsService {
   constructor(
     private readonly database: DatabaseService,
     private readonly profile: ProfileService,
+    private readonly agent: JobAgentClient,
   ) {}
   async list(): Promise<JobOpportunity[]> {
     return (
@@ -32,7 +34,15 @@ export class JobsService {
     return row.data;
   }
   async analyze(value: unknown): Promise<JobOpportunity> {
-    const job = analyze(validateCapture(value));
+    const details = await this.agent.analyze(validateCapture(value));
+    const job: JobOpportunity = {
+      id: randomUUID(),
+      ...details,
+      status: 'draft',
+      trackingStatus: 'saved',
+      notes: '',
+      createdAt: new Date().toISOString(),
+    };
     await this.database.db.insert(jobs).values({ id: job.id, data: job });
     return job;
   }

@@ -9,9 +9,11 @@ import {
   emptyProfile,
 } from '../src/profile/profile.service.js';
 import { JobsService } from '../src/jobs/jobs.service.js';
+import { JobAgentClient } from '../src/jobs/job-agent.client.js';
 import { ApplicationsService } from '../src/applications/applications.service.js';
 import { ProfileExtractorClient } from '../src/profile/profile-extractor.client.js';
 import { DashboardService } from '../src/dashboard/dashboard.service.js';
+import { InsightsService } from '../src/insights/insights.service.js';
 
 const job = {
   id: '47b6e9b2-36bd-469c-aa50-222222222222',
@@ -92,6 +94,19 @@ describe('web API routes', () => {
       },
     }),
   };
+  const insights = {
+    get: vi.fn().mockResolvedValue({
+      profileReady: false,
+      analyzedOpportunityCount: 0,
+      applicationCount: 0,
+      skillDemand: [],
+      skillGaps: [],
+      highValueSkills: [],
+      strongSkills: [],
+      recurringRequirements: [],
+      careerInsights: [],
+    }),
+  };
   beforeAll(async () => {
     const module = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(DatabaseService)
@@ -100,12 +115,16 @@ describe('web API routes', () => {
       .useValue(profile)
       .overrideProvider(ProfileExtractorClient)
       .useValue(extractor)
+      .overrideProvider(JobAgentClient)
+      .useValue({ analyze: vi.fn() })
       .overrideProvider(JobsService)
       .useValue(jobs)
       .overrideProvider(ApplicationsService)
       .useValue(applications)
       .overrideProvider(DashboardService)
       .useValue(dashboard)
+      .overrideProvider(InsightsService)
+      .useValue(insights)
       .compile();
     app = module.createNestApplication();
     await app.listen(0, '127.0.0.1');
@@ -116,6 +135,12 @@ describe('web API routes', () => {
       .get('/api/dashboard')
       .expect(200);
     expect(response.body).toEqual(await dashboard.get());
+  });
+  it('serves aggregated career insights', async () => {
+    const response = await request(app.getHttpServer())
+      .get('/api/insights')
+      .expect(200);
+    expect(response.body).toEqual(await insights.get());
   });
   it('serves profile routes', async () => {
     await request(app.getHttpServer()).get('/api/profile').expect(200);

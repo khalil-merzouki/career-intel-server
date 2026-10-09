@@ -6,7 +6,6 @@ import {
   validateJobUpdate,
 } from '../jobs/validation.js';
 import { validateCreate, validateUpdate } from '../applications/validation.js';
-import { analyze } from '../jobs/analyzer.js';
 import { compareOpportunity } from '../jobs/match-analysis.js';
 import { choice, date, id, list, object, string } from './validation.js';
 
@@ -39,14 +38,29 @@ describe('request and domain validation', () => {
       url: 'https://example.com',
       description: 'x'.repeat(100),
     });
-    expect(analyze(captured).status).toBe('draft');
     expect(() =>
       validateCapture({
         url: 'javascript:alert(1)',
         description: 'x'.repeat(100),
       }),
     ).toThrow();
-    const job = analyze(captured);
+    const job = {
+      ...captured,
+      id: '47b6e9b2-36bd-469c-aa50-222222222222',
+      role: 'Engineer',
+      company: 'Acme',
+      location: 'Madrid',
+      workType: 'hybrid' as const,
+      salary: '',
+      salarySource: 'estimated' as const,
+      seniority: '',
+      experience: '',
+      requirements: [],
+      status: 'draft' as const,
+      trackingStatus: 'saved' as const,
+      notes: '',
+      createdAt: '2026-10-09T00:00:00.000Z',
+    };
     expect(validateConfirmation(job).role).toBe(job.role);
     expect(
       validateJobUpdate({ notes: '', trackingStatus: 'archived' })

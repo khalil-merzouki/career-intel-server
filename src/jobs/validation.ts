@@ -10,6 +10,10 @@ export function validateCapture(value: unknown): JobOpportunityInput {
   const input = object(value);
   const description = string(input.description, 'description', 50000);
   const url = string(input.url, 'url', 2000);
+  const allowSimilar =
+    input.allowSimilar === undefined ? false : input.allowSimilar;
+  if (typeof allowSimilar !== 'boolean')
+    throw new BadRequestException('Invalid duplicate confirmation.');
   if (description.trim().length < 100)
     throw new BadRequestException(
       'Paste at least 100 characters from the job description.',
@@ -24,7 +28,7 @@ export function validateCapture(value: unknown): JobOpportunityInput {
       );
     }
   }
-  return { description, url };
+  return { description, url, allowSimilar };
 }
 export function validateConfirmation(
   value: unknown,
@@ -34,6 +38,7 @@ export function validateConfirmation(
   | 'company'
   | 'location'
   | 'workType'
+  | 'jobType'
   | 'salary'
   | 'salarySource'
   | 'seniority'
@@ -71,6 +76,11 @@ export function validateConfirmation(
       'on-site',
       'unknown',
     ]),
+    jobType: choice(input.jobType ?? 'unknown', 'jobType', [
+      'permanent',
+      'contract',
+      'unknown',
+    ] as const),
     salary: string(input.salary, 'salary', 500),
     salarySource: choice(input.salarySource, 'salarySource', [
       'listed',

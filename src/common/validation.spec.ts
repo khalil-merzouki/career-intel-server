@@ -32,6 +32,14 @@ describe('request and domain validation', () => {
         skills: [{ id: '1', name: 'SQL', proficiency: 'invalid' }],
       }),
     ).toThrow();
+    expect(() =>
+      validateProfile({
+        ...emptyProfile,
+        skills: [
+          { id: '1', name: 'SQL', proficiency: 'Advanced', category: 5 },
+        ],
+      }),
+    ).toThrow();
   });
   it('validates job capture, confirmation, and update', () => {
     const captured = validateCapture({
@@ -51,6 +59,7 @@ describe('request and domain validation', () => {
       company: 'Acme',
       location: 'Madrid',
       workType: 'hybrid' as const,
+      jobType: 'contract' as const,
       salary: '',
       salarySource: 'estimated' as const,
       seniority: '',
@@ -61,6 +70,8 @@ describe('request and domain validation', () => {
       notes: '',
       createdAt: '2026-10-09T00:00:00.000Z',
     };
+    expect(validateConfirmation(job).jobType).toBe('contract');
+    expect(() => validateConfirmation({ ...job, jobType: 'invalid' })).toThrow();
     expect(validateConfirmation(job).role).toBe(job.role);
     expect(
       validateJobUpdate({ notes: '', trackingStatus: 'archived' })

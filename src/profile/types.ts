@@ -13,6 +13,7 @@ export interface Skill {
   id: string;
   name: string;
   proficiency: Proficiency;
+  category?: string;
 }
 
 export interface Education {

@@ -4,12 +4,18 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import type { JobOpportunityInput, JobRequirement, WorkType } from './types.js';
+import type {
+  JobOpportunityInput,
+  JobRequirement,
+  JobType,
+  WorkType,
+} from './types.js';
 
 type Analysis = {
   jobTitle: string;
   company: string | null;
   seniority: string;
+  contract?: { type: string; details: string | null };
   location: {
     city: string | null;
     country: string | null;
@@ -32,6 +38,24 @@ type Analysis = {
     languages: string[];
   };
 };
+
+export function classifyJobType(
+  description: string,
+  contract?: Analysis['contract'],
+): JobType {
+  const terms = `${description} ${contract?.details ?? ''}`;
+  if (/\b(permanent|indefinite|open[- ]ended|CDI)\b/i.test(terms))
+    return 'permanent';
+  if (
+    /\b(fixed[- ]term|temporary|freelance|contractor|contract|CDD)\b/i.test(
+      terms,
+    )
+  )
+    return 'contract';
+  if (['contract', 'freelance', 'temporary'].includes(contract?.type ?? ''))
+    return 'contract';
+  return 'unknown';
+}
 
 export function mapAnalysis(input: JobOpportunityInput, value: unknown) {
   if (!value || typeof value !== 'object')
@@ -98,6 +122,7 @@ export function mapAnalysis(input: JobOpportunityInput, value: unknown) {
       location.details ||
       'Unknown',
     workType: location.workMode,
+    jobType: classifyJobType(input.description, a.contract),
     salary: salaryText,
     salarySource: salary.isEstimated
       ? ('estimated' as const)

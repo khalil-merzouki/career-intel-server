@@ -18,6 +18,32 @@ import {
 } from './validation.js';
 import type { JobOpportunity } from './types.js';
 
+const normalizedUrl = (value: string) => {
+  if (!value.trim()) return '';
+  const url = new URL(value.trim());
+  url.hash = '';
+  return url.toString().replace(/\/$/, '');
+};
+const normalizedName = (value: string) =>
+  value.trim().replace(/\s+/g, ' ').toLowerCase();
+const duplicate = (
+  code: 'duplicate_url' | 'similar_job',
+  existing: JobOpportunity,
+) =>
+  new ConflictException({
+    code,
+    message:
+      code === 'duplicate_url'
+        ? 'This job URL is already in your opportunities.'
+        : 'A job with the same role and company already exists at another URL.',
+    existing: {
+      id: existing.id,
+      role: existing.role,
+      company: existing.company,
+      url: existing.url,
+    },
+  });
+
 @Injectable()
 export class JobsService {
   constructor(
@@ -40,7 +66,28 @@ export class JobsService {
     return row.data;
   }
   async analyze(value: unknown): Promise<JobOpportunity> {
-    const details = await this.agent.analyze(validateCapture(value));
+    const input = validateCapture(value);
+    const existingJobs = await this.list();
+    const url = normalizedUrl(input.url);
+    const sameUrl =
+      url && existingJobs.find((job) => normalizedUrl(job.url) === url);
+    if (sameUrl) throw duplicate('duplicate_url', sameUrl);
+    const details = await this.agent.analyze({
+      description: input.description,
+      url: input.url,
+    });
+    const role = normalizedName(details.role);
+    const company = normalizedName(details.company);
+    const sameRoleAndCompany =
+      role &&
+      company &&
+      existingJobs.find(
+        (job) =>
+          normalizedName(job.role) === role &&
+          normalizedName(job.company) === company,
+      );
+    if (sameRoleAndCompany && !input.allowSimilar)
+      throw duplicate('similar_job', sameRoleAndCompany);
     const job: JobOpportunity = {
       id: randomUUID(),
       ...details,

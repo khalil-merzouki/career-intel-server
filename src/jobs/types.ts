@@ -3,6 +3,7 @@ export type RequirementCategory =
 export type RequirementPriority = 'required' | 'preferred';
 export type OpportunityStatus = 'draft' | 'confirmed';
 export type WorkType = 'remote' | 'hybrid' | 'on-site' | 'unknown';
+export type JobType = 'permanent' | 'contract' | 'unknown';
 export type SalarySource = 'listed' | 'estimated';
 export type TrackingStatus = 'saved' | 'applied' | 'archived';
 
@@ -19,6 +20,7 @@ export interface JobOpportunity {
   company: string;
   location: string;
   workType: WorkType;
+  jobType?: JobType;
   salary: string;
   salarySource: SalarySource;
   url: string;
@@ -35,6 +37,7 @@ export interface JobOpportunity {
 export interface JobOpportunityInput {
   url: string;
   description: string;
+  allowSimilar?: boolean;
 }
 
 export interface MatchFinding {

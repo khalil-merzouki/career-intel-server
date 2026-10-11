@@ -16,6 +16,7 @@ export interface ExtractedProfile {
   skills: {
     name: string;
     proficiency: Profile['skills'][number]['proficiency'];
+    category?: string;
   }[];
   education: { qualification: string; institution: string; year: string }[];
   certifications: { name: string; issuer: string }[];

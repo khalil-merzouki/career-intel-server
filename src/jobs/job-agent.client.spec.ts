@@ -1,5 +1,9 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { JobAgentClient, mapAnalysis } from './job-agent.client.js';
+import {
+  JobAgentClient,
+  classifyJobType,
+  mapAnalysis,
+} from './job-agent.client.js';
 
 const input = { description: 'A'.repeat(100), url: '' };
 const output = {
@@ -35,6 +39,7 @@ describe('job agent client', () => {
       role: 'Senior Engineer',
       location: 'Madrid, Spain',
       workType: 'hybrid',
+      jobType: 'unknown',
       salary: 'EUR 60,000–80,000 / year',
       salarySource: 'listed',
       experience: '5 years of experience',
@@ -44,6 +49,21 @@ describe('job agent client', () => {
         expect.objectContaining({ text: 'English', category: 'language' }),
       ],
     });
+  });
+  it('classifies explicit employment terms without treating full-time as permanent', () => {
+    expect(
+      classifyJobType('Full-time software engineer', {
+        type: 'full-time',
+        details: null,
+      }),
+    ).toBe('unknown');
+    expect(
+      classifyJobType('Permanent role', { type: 'full-time', details: null }),
+    ).toBe('permanent');
+    expect(
+      classifyJobType('Six-month role', { type: 'contract', details: null }),
+    ).toBe('contract');
+    expect(classifyJobType('CDI role')).toBe('permanent');
   });
   it('uses the separate agent URL and bearer token', async () => {
     vi.stubEnv('JOB_AGENT_TOKEN', 'test-token');

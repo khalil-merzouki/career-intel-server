@@ -14,7 +14,9 @@ const extraction: ExtractedProfile = {
       description: 'Designed products.',
     },
   ],
-  skills: [{ name: 'Figma', proficiency: 'Unspecified' }],
+  skills: [
+    { name: 'Figma', proficiency: 'Unspecified', category: 'Design tools' },
+  ],
   education: [],
   certifications: [],
   languages: [],
@@ -37,6 +39,7 @@ describe('CV import', () => {
     expect(profile.skills[0]).toMatchObject({
       name: 'Figma',
       proficiency: 'Unspecified',
+      category: 'Design tools',
       id: expect.any(String),
     });
     expect(profile.salaryCurrency).toBe('EUR');

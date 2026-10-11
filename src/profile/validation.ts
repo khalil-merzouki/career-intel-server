@@ -20,15 +20,16 @@ export function validateProfile(value: unknown): Profile {
     'description',
   ]);
   const skills = records(p.skills, 'skills', ['id', 'name', 'proficiency']);
-  skills.forEach((s) =>
+  skills.forEach((s) => {
     choice(s.proficiency, 'proficiency', [
       'Unspecified',
       'Beginner',
       'Intermediate',
       'Advanced',
       'Expert',
-    ]),
-  );
+    ]);
+    if (s.category !== undefined) string(s.category, 'skills.category', 100);
+  });
   const education = records(p.education, 'education', [
     'id',
     'qualification',
